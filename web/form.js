@@ -5,28 +5,40 @@ const input = document.querySelector("#url")
 
 const content = document.querySelector("#content")
 
-form.addEventListener("submit", async (event) => {  //funcao async quando tem alguema etapa do codigo q deseja que espere
+form.addEventListener("submit", async (event) => {
+  //funcao async quando tem alguema etapa do codigo q deseja que espere
   // evento de submit quando o usuario aperta o play
+
   event.preventDefault() //para prevenir o comportamento padrao do navegador, fazendo com que nao recaregue a pagina e fique no console
+
+  content.classList.add("placeholder") //para selecionar o texto
 
   const videoURL = input.value // para recurar o valor do input a URL
   // console.log("URL DO VÍDEO: ", videoURL)
 
-  if (!videoURL.includes("shorts")) { // para verificar se o video é um short
+  if (!videoURL.includes("shorts")) {
+    // para verificar se o video é um short
     //metodo includes serve para saber se tal coisa esta inclusa
     //console.log("Esse vídeo não parece ser um short ")
     return (content.textContent = "Esse vídeo não parece ser um short.")
   }
-  //obter o id do video 
+  //obter o id do video
   const [_, params] = videoURL.split("/shorts/") //split divide o texto, separa em duas o q vem antes e dps de shorts ex: https://www.youtube.com/    shorts    /TFGAMLL68CA
   const [videoID] = params.split("?si") //para limpar o resto de caracteres para so ter o id, a primeira posição
   //console.log(videoID)
 
-  content.textContent ="Obtendo o texto do áudio..."
+  content.textContent = "Obtendo o texto do áudio..."
 
   const transcription = await server.get("/summary/" + videoID) // para baixar o video com await ira aguardar o finalizamento da etapa
+  //summary é a rota que recebe o id do video
 
-  content.textContent =  transcription.data.result
+  content.textContent = "Realizando o Resumo..."
 
+  const summary = await server.post("/summary", {
+    text: transcription.data.result,
+    // requisicao para a rota summary utilizando metodo post. enviando no corpo da requisição  atraves da propriedade 'text', enviando o resultado da transcrição
+  })
 
+  content.textContent = summary.data.result
+  content.classList.remove("placeholder") //para selecionar o texto
 })
